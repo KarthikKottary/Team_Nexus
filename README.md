@@ -17,8 +17,9 @@ A real-time, high-impact "Mission Control" system designed specifically to monit
 **Backend:**
 - **Runtime:** Node.js
 - **Framework:** Express.js
-- **Database:** MongoDB Atlas (Mongoose)
-- **Utilities:** CORS, dotenv, nodemon
+- **Database:** MongoDB Atlas (Mongoose) + `mongodb-memory-server` for local testing
+- **Real-Time:** Socket.io
+- **Utilities:** CORS, dotenv, nodemon, JWT (jsonwebtoken), bcryptjs
 
 ---
 
@@ -28,20 +29,23 @@ A real-time, high-impact "Mission Control" system designed specifically to monit
    - Custom WebGL animated shader background.
    - High-contrast Call-To-Action entry points.
 2. **Admin Dashboard (The Eye):**
+   - **Real-Time WebSockets:** Instantly streams new emergencies and team commits directly to the UI without refreshing.
    - **Live Emergency Alerts:** Glowing red, priority-based notification cards for medical or technical failures.
-   - **Project Activity Tracker:** Real-time visibility into team GitHub commits and project status (🟢 Active / 🟡 Idle / 🔴 Inactive).
+   - **Project Activity Tracker:** Tracks team GitHub commits and project status (🟢 Active / 🟡 Idle / 🔴 Inactive).
    - **System Status:** Top-level metrics on active teams and system health.
 3. **Team Portal:**
+   - **GitHub Webhook Integration:** Live webhook endpoint (`/api/teams/:id/webhook`) that automatically parses GitHub push events to update commit counts.
    - Individual team views showing members and recent commit history.
    - A critical "Trigger Emergency Alert" feature to instantly page event organizers.
 4. **Secure Access Portal:**
    - Futuristic, minimalist authentication screen to access the system.
+   - Role-based access control (Admin vs. Participant).
 
 ---
 
 ## 📂 Project Structure
 
-\`\`\`text
+```text
 hack/
 ├── backend/                  # Node/Express Server
 │   ├── .env.example          # Environment variables template
@@ -62,7 +66,7 @@ hack/
 │       │   ├── layout/       # Sidebar navigation
 │       │   └── ui/           # Atomic components (e.g. animated-shader-hero)
 │       └── pages/            # View components (Admin, Team, Landing, Auth)
-\`\`\`
+```
 
 ---
 
@@ -70,36 +74,38 @@ hack/
 
 ### Prerequisites
 - Node.js (v18 or higher)
-- A MongoDB Connection URI (Local or Atlas)
+- Optional: A MongoDB Connection URI (Atlas) - If not provided, an in-memory database will run automatically for testing!
 
 ### 1. Backend Setup
-Open a terminal in the \`backend\` directory:
-\`\`\`bash
+Open a terminal in the `backend` directory:
+```bash
 cd backend
 npm install
-\`\`\`
-Copy the environment variables template and configure your Database:
-\`\`\`bash
-cp .env.example .env
-# Edit .env and insert your MongoDB URI
-\`\`\`
+```
 Start the development server:
-\`\`\`bash
+```bash
 npm run dev
 # Server will run on http://localhost:5000
-\`\`\`
+```
+*Note: If no Atlas URI is provided in the `.env` file, the server uses `mongodb-memory-server` and pre-seeds demo users and alerts!*
 
 ### 2. Frontend Setup
-Open a new terminal window in the \`frontend\` directory:
-\`\`\`bash
+Open a new terminal window in the `frontend` directory:
+```bash
 cd frontend
 npm install
-\`\`\`
+```
 Start the Vite development server:
-\`\`\`bash
+```bash
 npm run dev
 # App will run on http://localhost:5173
-\`\`\`
+```
+*Note: The frontend is configured to proxy API requests to `/api` locally avoiding any CORS issues.*
+
+### 🔑 Demo Login Credentials
+When starting with the seeded memory database, you can log in using:
+- **Admin Role:** `admin@hackathon.dev` / `admin123`
+- **Participant Role:** `alice@hackathon.dev` / `alice123`
 
 ---
 
@@ -108,3 +114,8 @@ This system adheres to a strict "Dark Theme" architecture. It completely avoids 
 - **Orange/Yellow** accents represent general activity and warnings.
 - **Red** accents are strictly reserved for emergency alerts and critical system failures.
 - **Green** is utilized sparsely to verify active systems and nominal operations.
+
+---
+
+## 📈 Development Tracking
+See [progress.md](./progress.md) to track completed tasks, current status, and upcoming features.
