@@ -125,3 +125,9 @@ This system adheres to a strict "Dark Theme" architecture. It completely avoids 
 
 ## 📈 Development Tracking
 See [progress.md](./progress.md) to track completed tasks, current status, and upcoming features.
+
+---
+
+## 👥 Contributors
+- **[KarthikKottary](https://github.com/KarthikKottary)** - Lead Developer
+- **[moyeez05](https://github.com/moyeez05)** - Contributor
