@@ -2,7 +2,8 @@ const express = require('express');
 const { protect, authorize } = require('../middleware/auth');
 const {
   getAllTeams, getTeam, createTeam, updateTeam,
-  deleteTeam, addCommit, getStats, handleWebhook
+  deleteTeam, addCommit, getStats, handleWebhook,
+  createMyTeam, joinTeam, getMyTeamDetails
 } = require('../controllers/teamController');
 
 const router = express.Router();
@@ -10,6 +11,13 @@ const router = express.Router();
 // Public
 router.get('/', getAllTeams);
 router.get('/stats', protect, authorize('admin'), getStats);
+
+// Participant Team Management
+router.post('/create', protect, authorize('participant'), createMyTeam);
+router.post('/join', protect, authorize('participant'), joinTeam);
+router.get('/details', protect, authorize('participant'), getMyTeamDetails);
+
+// Single team by ID (Put this after specific routes like /create or /stats)
 router.get('/:id', getTeam);
 
 router.post('/', protect, authorize('admin'), createTeam);

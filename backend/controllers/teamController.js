@@ -179,4 +179,96 @@ const handleWebhook = async (req, res) => {
   }
 };
 
-module.exports = { getAllTeams, getTeam, createTeam, updateTeam, deleteTeam, addCommit, getStats, handleWebhook };
+const User = require('../models/User');
+const crypto = require('crypto');
+
+/**
+ * POST /teams/create
+ * Participant - Create a new team and become the owner
+ */
+const createMyTeam = async (req, res) => {
+  try {
+    // Check if user is already in a team
+    if (req.user.team) {
+      return res.status(400).json({ success: false, message: 'You are already in a team.' });
+    }
+
+    const { name, repo } = req.body;
+    if (!name) return res.status(400).json({ success: false, message: 'Team name is required.' });
+
+    const existing = await Team.findOne({ name });
+    if (existing) return res.status(409).json({ success: false, message: 'Team name is taken.' });
+
+    // Generate random 6-character join code
+    const joinCode = crypto.randomBytes(3).toString('hex').toUpperCase();
+
+    const team = await Team.create({
+      name,
+      repo: repo || '',
+      owner: req.user._id,
+      members: [req.user._id],
+      joinCode,
+    });
+
+    // Update the user
+    await User.findByIdAndUpdate(req.user._id, { team: team._id });
+
+    res.status(201).json({ success: true, data: team });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to create team.' });
+  }
+};
+
+/**
+ * POST /teams/join
+ * Participant - Join team via joinCode
+ */
+const joinTeam = async (req, res) => {
+  try {
+    if (req.user.team) {
+      return res.status(400).json({ success: false, message: 'You are already in a team.' });
+    }
+
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ success: false, message: 'Join code is required.' });
+
+    const team = await Team.findOne({ joinCode: code.toUpperCase() });
+    if (!team) return res.status(404).json({ success: false, message: 'Invalid join code.' });
+
+    // Add user to team
+    team.members.push(req.user._id);
+    await team.save();
+
+    // Update user
+    await User.findByIdAndUpdate(req.user._id, { team: team._id });
+
+    res.status(200).json({ success: true, data: team });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to join team.' });
+  }
+};
+
+/**
+ * GET /teams/details
+ * Participant - View my team details
+ */
+const getMyTeamDetails = async (req, res) => {
+  try {
+    if (!req.user.team) {
+      return res.status(404).json({ success: false, message: 'You are not in a team yet.' });
+    }
+
+    const team = await Team.findById(req.user.team).populate('members', 'name email role');
+    if (!team) return res.status(404).json({ success: false, message: 'Team not found.' });
+
+    res.status(200).json({ success: true, data: team });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch team details.' });
+  }
+};
+
+module.exports = { 
+  getAllTeams, getTeam, createTeam, updateTeam, deleteTeam, 
+  addCommit, getStats, handleWebhook,
+  createMyTeam, joinTeam, getMyTeamDetails
+};

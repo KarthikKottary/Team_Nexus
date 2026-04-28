@@ -45,6 +45,15 @@ export const apiGetTeamStats = () =>
 export const apiGetTeam = (id: string) =>
   fetch(`${BASE_URL}/teams/${id}`, { headers: headers() }).then(handleResponse);
 
+export const apiGetMyTeamDetails = () =>
+  fetch(`${BASE_URL}/teams/details`, { headers: headers(true) }).then(handleResponse);
+
+export const apiCreateMyTeam = (body: object) =>
+  fetch(`${BASE_URL}/teams/create`, { method: 'POST', headers: headers(true), body: JSON.stringify(body) }).then(handleResponse);
+
+export const apiJoinTeam = (body: { code: string }) =>
+  fetch(`${BASE_URL}/teams/join`, { method: 'POST', headers: headers(true), body: JSON.stringify(body) }).then(handleResponse);
+
 export const apiCreateTeam = (body: object) =>
   fetch(`${BASE_URL}/teams`, { method: 'POST', headers: headers(true), body: JSON.stringify(body) })
     .then(handleResponse);

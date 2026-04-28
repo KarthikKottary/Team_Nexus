@@ -33,6 +33,11 @@ const UserSchema = new mongoose.Schema(
       },
       default: 'participant',
     },
+    team: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Team',
+      default: null,
+    },
   },
   {
     timestamps: true,

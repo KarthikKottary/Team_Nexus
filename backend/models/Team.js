@@ -10,15 +10,6 @@ const CommitSchema = new mongoose.Schema(
   { _id: false }
 );
 
-const MemberSchema = new mongoose.Schema(
-  {
-    name: { type: String, required: true },
-    role: { type: String, default: 'Member' }, // e.g. Lead, Frontend, Backend
-    email: { type: String },
-  },
-  { _id: false }
-);
-
 const TeamSchema = new mongoose.Schema(
   {
     name: {
@@ -29,13 +20,18 @@ const TeamSchema = new mongoose.Schema(
     },
     repo: {
       type: String,
-      required: [true, 'GitHub repo URL is required'],
       trim: true,
+      default: '',
     },
-    members: {
-      type: [MemberSchema],
-      default: [],
+    joinCode: {
+      type: String,
+      unique: true,
+      sparse: true,
     },
+    members: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    }],
     recentCommits: {
       type: [CommitSchema],
       default: [],
@@ -49,7 +45,6 @@ const TeamSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
-    // Link to the team's registered user (participant account)
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
