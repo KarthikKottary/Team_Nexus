@@ -180,6 +180,7 @@ const handleWebhook = async (req, res) => {
 };
 
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 const crypto = require('crypto');
 
 /**
@@ -193,8 +194,10 @@ const createMyTeam = async (req, res) => {
       return res.status(400).json({ success: false, message: 'You are already in a team.' });
     }
 
-    const { name, repo } = req.body;
-    if (!name) return res.status(400).json({ success: false, message: 'Team name is required.' });
+    const { name, college_name, repo } = req.body;
+    if (!name || !college_name) {
+      return res.status(400).json({ success: false, message: 'Team name and college name are required.' });
+    }
 
     const existing = await Team.findOne({ name });
     if (existing) return res.status(409).json({ success: false, message: 'Team name is taken.' });
@@ -204,24 +207,44 @@ const createMyTeam = async (req, res) => {
 
     const team = await Team.create({
       name,
+      college_name,
       repo: repo || '',
       owner: req.user._id,
       members: [req.user._id],
       joinCode,
+      status: 'pending', // < 2 members
     });
 
     // Update the user
     await User.findByIdAndUpdate(req.user._id, { team: team._id });
 
+    // Create Notification for Admin
+    const notification = await Notification.create({
+      user_id: req.user._id,
+      team_id: team._id,
+      action: 'CREATED_TEAM',
+    });
+    
+    // Notify Admin Dashboard via WebSockets
+    const populatedNotification = await Notification.findById(notification._id)
+      .populate('user_id', 'name')
+      .populate('team_id', 'name');
+
+    if (req.io) req.io.emit('team_created', populatedNotification);
+
     res.status(201).json({ success: true, data: team });
   } catch (err) {
+    if (err.name === 'ValidationError') {
+      const messages = Object.values(err.errors).map((e) => e.message);
+      return res.status(400).json({ success: false, message: messages.join(', ') });
+    }
     res.status(500).json({ success: false, message: 'Failed to create team.' });
   }
 };
 
 /**
- * POST /teams/join
- * Participant - Join team via joinCode
+ * POST /teams/join/:teamId
+ * Participant - Join team via team ID
  */
 const joinTeam = async (req, res) => {
   try {
@@ -229,18 +252,50 @@ const joinTeam = async (req, res) => {
       return res.status(400).json({ success: false, message: 'You are already in a team.' });
     }
 
-    const { code } = req.body;
-    if (!code) return res.status(400).json({ success: false, message: 'Join code is required.' });
+    const teamId = req.params.teamId;
+    
+    // Support joining by ObjectId or by joinCode
+    let team;
+    if (teamId.length === 24) { // valid ObjectId length
+      team = await Team.findById(teamId);
+    } else {
+      team = await Team.findOne({ joinCode: teamId.toUpperCase() });
+    }
+    
+    if (!team) return res.status(404).json({ success: false, message: 'Invalid team ID or join code.' });
 
-    const team = await Team.findOne({ joinCode: code.toUpperCase() });
-    if (!team) return res.status(404).json({ success: false, message: 'Invalid join code.' });
+    // Enforce max members rule
+    if (team.members.length >= 4) {
+      return res.status(400).json({ success: false, message: 'Team is full (max 4 members).' });
+    }
 
     // Add user to team
     team.members.push(req.user._id);
+    
+    // Enforce minimum members logic for 'active' status
+    if (team.members.length >= 2) {
+      team.status = 'active';
+    }
+    
     await team.save();
 
     // Update user
     await User.findByIdAndUpdate(req.user._id, { team: team._id });
+
+    // Create Notification for Admin
+    const notification = await Notification.create({
+      user_id: req.user._id,
+      team_id: team._id,
+      action: 'JOINED_TEAM',
+    });
+
+    // Notify Admin Dashboard via WebSockets
+    const populatedNotification = await Notification.findById(notification._id)
+      .populate('user_id', 'name')
+      .populate('team_id', 'name');
+
+    if (req.io) req.io.emit('member_joined', populatedNotification);
+    if (req.io) req.io.emit('team_updated', team);
 
     res.status(200).json({ success: true, data: team });
   } catch (err) {

@@ -9,6 +9,9 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 const authRoutes  = require('./routes/authRoutes');
 const teamRoutes  = require('./routes/teamRoutes');
 const alertRoutes = require('./routes/alertRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const exportRoutes = require('./routes/exportRoutes');
+const githubRoutes = require('./routes/githubRoutes');
 
 const app  = express();
 const server = http.createServer(app);
@@ -42,8 +45,7 @@ async function connectDB() {
 
   const isPlaceholder =
     !uri ||
-    uri === 'your_mongodb_atlas_connection_string_here' ||
-    uri.startsWith('mongodb://localhost');
+    uri === 'your_mongodb_atlas_connection_string_here';
 
   if (isPlaceholder) {
     console.log('⚙️  No Atlas URI found — starting in-memory MongoDB...');
@@ -55,113 +57,7 @@ async function connectDB() {
   await mongoose.connect(uri);
   console.log('✅ MongoDB connected successfully');
 
-  // Seed demo data on first run
-  await seedDemoData();
-}
-
-// ──────────────────────────────────────────────
-//  Demo Seed Data
-// ──────────────────────────────────────────────
-async function seedDemoData() {
-  const User  = require('./models/User');
-  const Team  = require('./models/Team');
-  const Alert = require('./models/Alert');
-
-  const userCount = await User.countDocuments();
-  if (userCount > 0) return; // Already seeded
-
-  console.log('🌱 Seeding demo data...');
-
-  // Create admin user
-  const admin = await User.create({
-    name: 'Admin User',
-    email: 'admin@hackathon.dev',
-    password: 'admin123',
-    role: 'admin',
-  });
-
-  // Create participant user
-  const participant = await User.create({
-    name: 'Alice Johnson',
-    email: 'alice@hackathon.dev',
-    password: 'alice123',
-    role: 'participant',
-  });
-
-  // Create teams
-  const teams = await Team.insertMany([
-    {
-      name: 'NeuralKnights',
-      repo: 'github.com/neuralkights/hack',
-      status: 'active',
-      lastCommitAt: new Date(Date.now() - 2 * 60 * 1000),
-      members: [
-        { name: 'Alice Johnson', role: 'Lead' },
-        { name: 'Bob Smith',     role: 'Frontend' },
-        { name: 'Charlie Brown', role: 'Backend' },
-      ],
-      recentCommits: [
-        { message: 'fix: auth token refresh', author: 'Alice Johnson', timestamp: new Date(Date.now() - 2 * 60 * 1000) },
-        { message: 'feat: add WebSocket support', author: 'Bob Smith',  timestamp: new Date(Date.now() - 30 * 60 * 1000) },
-      ],
-      owner: participant._id,
-    },
-    {
-      name: 'CodeCrafters',
-      repo: 'github.com/codecrafters/app',
-      status: 'idle',
-      lastCommitAt: new Date(Date.now() - 65 * 60 * 1000),
-      members: [
-        { name: 'Diana Prince', role: 'Lead' },
-        { name: 'Ethan Hunt',   role: 'ML Engineer' },
-      ],
-      recentCommits: [
-        { message: 'chore: update dependencies', author: 'Diana Prince', timestamp: new Date(Date.now() - 65 * 60 * 1000) },
-      ],
-    },
-    {
-      name: 'SyntaxError',
-      repo: 'github.com/syntaxerror/bot',
-      status: 'inactive',
-      lastCommitAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
-      members: [
-        { name: 'Frank Castle', role: 'Lead' },
-        { name: 'Grace Hopper', role: 'DevOps' },
-      ],
-      recentCommits: [
-        { message: 'init: project scaffold', author: 'Grace Hopper', timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000) },
-      ],
-    },
-  ]);
-
-  // Create sample alerts
-  await Alert.insertMany([
-    {
-      type: 'Medical',
-      location: 'Section B, Table 12',
-      description: 'Participant reported dizziness',
-      team: teams[0]._id,
-      triggeredBy: participant._id,
-      active: true,
-    },
-    {
-      type: 'Technical',
-      location: 'Server Room',
-      description: 'Network switch overheating',
-      active: false,
-      resolvedAt: new Date(),
-    },
-  ]);
-
-  console.log('✅ Demo data seeded!');
-  console.log('');
-  console.log('═══════════════════════════════════════');
-  console.log('  🔑 DEMO LOGIN CREDENTIALS');
-  console.log('═══════════════════════════════════════');
-  console.log('  Admin:       admin@hackathon.dev  / admin123');
-  console.log('  Participant: alice@hackathon.dev  / alice123');
-  console.log('═══════════════════════════════════════');
-  console.log('');
+  // No demo data seeding - real entries only
 }
 
 // ──────────────────────────────────────────────
@@ -174,6 +70,9 @@ app.get('/api/status', (req, res) => {
 app.use('/api/auth',   authRoutes);
 app.use('/api/teams',  teamRoutes);
 app.use('/api/alerts', alertRoutes);
+app.use('/api/admin/notifications', notificationRoutes);
+app.use('/api/admin/export-report', exportRoutes);
+app.use('/api/github', githubRoutes);
 
 // ──────────────────────────────────────────────
 //  Global Error Handler

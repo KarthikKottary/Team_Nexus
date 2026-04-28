@@ -20,6 +20,9 @@ Updates must align with commits to ensure transparency of work done.
 - **Deployment Convenience**: 
   - Integrated `mongodb-memory-server` to automatically spin up a local DB and seed demo data if no Atlas URI is provided.
   - Setup Vite proxy (`/api`) to gracefully bypass CORS.
+- **Frontend Profile Settings UI**: Built an animated settings modal for Participants to dynamically edit their repository link and team name.
+- **Production Deployment**: Containerized the entire stack with Docker (`frontend` and `backend` Dockerfiles), managed orchestration via `docker-compose`, and implemented a CI/CD GitHub Actions pipeline.
+- **Analytics & Export**: Created a secure admin endpoint to export an aggregated CSV report of all emergencies and team commits using `json2csv`, and integrated a direct download button on the frontend Settings dashboard.
 
 ## 🟡 Current Progress
 - The core loop is fully functional: Users can register, log in, view role-specific dashboards, and log out.
@@ -29,7 +32,29 @@ Updates must align with commits to ensure transparency of work done.
 
 ## 🔵 Next Steps
 
-### 1. Other Planned Features
-- **Frontend Profile Settings UI**: Build the frontend modal/page for Participants to use `apiUpdateTeam` to edit their repo link and team details.
-- **Production Deployment**: Containerize the app using Docker, set up a CI/CD pipeline, and provision a live MongoDB Atlas instance.
-- **Analytics & Export**: Add a feature for Admins to export a CSV report of all emergencies and final team commit counts at the end of the hackathon.
+### 1. Polish & QA
+- **User Acceptance Testing (UAT)**: Verify full workflow across different simulated user devices.
+- **Cloud Database Cutover**: Switch `MONGO_URI` to a production MongoDB Atlas cluster before live launch.
+
+### 2. Future Implementation: GitHub Project Tracking API
+Currently, GitHub pushes are tracked via webhooks. To support on-demand repository analysis, we have drafted the `POST /api/github/fetch` endpoint.
+**Features Included:**
+- **URL Parsing**: Accepts standard GitHub repository URLs and extracts `owner` and `repo` via regex.
+- **Commit Extraction**: Queries `https://api.github.com/repos/:owner/:repo/commits` to pull the latest commit timestamp and aggregate total commits.
+- **Activity Status Algorithm**: Automatically determines project activity by comparing the last commit timestamp against a 24-hour window (Active/Inactive).
+- **Error Handling**: Gracefully handles `404 Not Found` (Private Repos) and `403 Rate Limit Exceeded`.
+
+**Example Output Payload:**
+```json
+{
+  "success": true,
+  "data": {
+    "owner": "torvalds",
+    "repo": "linux",
+    "totalCommits": 100,
+    "lastCommitTime": "2023-10-24T12:00:00Z",
+    "activityStatus": "Active",
+    "rateLimitRemaining": "59"
+  }
+}
+```

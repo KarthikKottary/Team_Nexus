@@ -1,6 +1,6 @@
 import React from 'react';
 
-type StatusType = 'active' | 'idle' | 'inactive' | 'running' | 'alert';
+type StatusType = 'active' | 'idle' | 'inactive' | 'running' | 'alert' | 'pending';
 
 interface StatusBadgeProps {
   status: StatusType;
@@ -14,6 +14,7 @@ const statusConfig = {
   idle: { color: 'bg-yellow-500', text: 'text-yellow-400', border: 'border-yellow-500/30', bg: 'bg-yellow-500/10', defaultLabel: 'Idle' },
   inactive: { color: 'bg-gray-500', text: 'text-gray-400', border: 'border-gray-500/30', bg: 'bg-gray-500/10', defaultLabel: 'Inactive' },
   alert: { color: 'bg-red-500', text: 'text-red-400', border: 'border-red-500/30', bg: 'bg-red-500/10', defaultLabel: 'Alert Active' },
+  pending: { color: 'bg-blue-500', text: 'text-blue-400', border: 'border-blue-500/30', bg: 'bg-blue-500/10', defaultLabel: 'Pending' },
 };
 
 const StatusBadge: React.FC<StatusBadgeProps> = ({ status, label, animate = true }) => {

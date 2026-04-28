@@ -14,7 +14,7 @@ router.get('/stats', protect, authorize('admin'), getStats);
 
 // Participant Team Management
 router.post('/create', protect, authorize('participant'), createMyTeam);
-router.post('/join', protect, authorize('participant'), joinTeam);
+router.post('/join/:teamId', protect, authorize('participant'), joinTeam);
 router.get('/details', protect, authorize('participant'), getMyTeamDetails);
 
 // Single team by ID (Put this after specific routes like /create or /stats)

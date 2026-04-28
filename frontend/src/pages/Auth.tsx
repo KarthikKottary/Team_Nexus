@@ -45,8 +45,7 @@ const Auth = () => {
     'w-full bg-gray-950 border border-gray-800 rounded-lg py-3 pl-10 pr-4 text-gray-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)] placeholder-gray-600';
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4 font-sans">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-gray-950 to-black pointer-events-none" />
+    <div className="min-h-screen flex items-center justify-center p-4 font-sans bg-transparent">
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -179,34 +178,6 @@ const Auth = () => {
           </button>
         </div>
 
-        {/* Quick Demo Logins */}
-        {isLogin && (
-          <div className="mt-6 pt-6 border-t border-gray-800/50">
-            <p className="text-xs text-gray-500 uppercase tracking-widest text-center mb-3">Quick Demo Logins</p>
-            <div className="flex gap-3 justify-center">
-              <button
-                type="button"
-                onClick={() => {
-                  setEmail('admin@hackathon.dev');
-                  setPassword('admin123');
-                }}
-                className="text-xs py-1.5 px-3 rounded-md bg-blue-900/20 text-blue-400 border border-blue-800/30 hover:bg-blue-900/40 transition-colors"
-              >
-                Admin Login
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setEmail('alice@hackathon.dev');
-                  setPassword('alice123');
-                }}
-                className="text-xs py-1.5 px-3 rounded-md bg-green-900/20 text-green-400 border border-green-800/30 hover:bg-green-900/40 transition-colors"
-              >
-                Participant Login
-              </button>
-            </div>
-          </div>
-        )}
       </motion.div>
     </div>
   );

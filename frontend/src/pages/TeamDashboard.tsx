@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertTriangle, GitBranch, Users, Activity, LogOut, Loader2, CheckCircle, Code, Shield } from 'lucide-react';
-import StatusBadge from '@/components/dashboard/StatusBadge';
+import { AlertTriangle, GitBranch, Users, Activity, LogOut, Loader2, CheckCircle, Shield, Settings } from 'lucide-react';
+import StatusBadge from '../components/dashboard/StatusBadge';
 import { useAuth } from '../context/AuthContext';
-import { apiCreateAlert, apiGetMyTeamDetails, apiCreateMyTeam, apiJoinTeam } from '../api/client';
+import { apiCreateAlert, apiGetMyTeamDetails, apiCreateMyTeam, apiJoinTeam, apiUpdateTeam } from '../api/client';
 import { useNavigate } from 'react-router-dom';
 
 type AlertType = 'Medical' | 'Technical' | 'Security' | 'Fire' | 'Other';
@@ -20,6 +20,7 @@ const TeamDashboard = () => {
   // Form State
   const [joinCode, setJoinCode] = useState('');
   const [createName, setCreateName] = useState('');
+  const [createCollege, setCreateCollege] = useState('');
   const [createRepo, setCreateRepo] = useState('');
 
   // Alert State
@@ -28,11 +29,20 @@ const TeamDashboard = () => {
   const [alertType, setAlertType] = useState<AlertType>('Medical');
   const [alertError, setAlertError] = useState('');
 
+  // Edit Team State
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editRepo, setEditRepo] = useState('');
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState('');
+
   const fetchMyTeam = async () => {
     try {
       setLoadingTeam(true);
       const res = await apiGetMyTeamDetails();
       setTeam(res.data);
+      setEditName(res.data.name);
+      setEditRepo(res.data.repo || '');
     } catch (err: any) {
       setTeam(null);
     } finally {
@@ -48,7 +58,7 @@ const TeamDashboard = () => {
     e.preventDefault();
     setTeamError('');
     try {
-      await apiCreateMyTeam({ name: createName, repo: createRepo });
+      await apiCreateMyTeam({ name: createName, college_name: createCollege, repo: createRepo });
       await fetchMyTeam();
     } catch (err: any) {
       setTeamError(err.message || 'Failed to create team.');
@@ -85,19 +95,43 @@ const TeamDashboard = () => {
     }
   };
 
+  const handleUpdateTeam = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editName.trim()) {
+      setEditError("Team name is required");
+      return;
+    }
+    if (editRepo && !editRepo.startsWith('http')) {
+      setEditError("Must be a valid URL starting with http/https");
+      return;
+    }
+    
+    setEditError('');
+    setEditLoading(true);
+    try {
+      await apiUpdateTeam(team._id, { name: editName, repo: editRepo });
+      await fetchMyTeam();
+      setIsEditing(false);
+    } catch (err: any) {
+      setEditError(err.message || 'Failed to update team');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   const handleLogout = () => { logout(); navigate('/auth'); };
 
   if (loadingTeam) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center text-white">
+      <div className="min-h-screen bg-transparent flex items-center justify-center text-white">
         <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center p-6 text-white font-sans relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-orange-900/10 via-gray-950 to-gray-950 pointer-events-none" />
+    <div className="min-h-screen bg-transparent flex flex-col items-center justify-center p-6 text-white font-sans relative overflow-hidden">
+
 
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
@@ -107,9 +141,16 @@ const TeamDashboard = () => {
         {/* Header */}
         <div className="flex justify-between items-start mb-8 border-b border-gray-800 pb-6">
           <div>
-            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-yellow-500 mb-1">
-              {team ? team.name : 'Participant Portal'}
-            </h1>
+            <div className="flex items-center gap-4">
+              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500 mb-1">
+                {team ? team.name : 'Participant Portal'}
+              </h1>
+              {team && !isEditing && (
+                <button onClick={() => setIsEditing(true)} className="bg-gray-800 hover:bg-gray-700 text-gray-300 p-2 rounded-full transition-colors">
+                  <Settings className="w-4 h-4" />
+                </button>
+              )}
+            </div>
             <p className="text-gray-400 flex items-center gap-2 font-mono text-sm">
               <GitBranch className="w-4 h-4" /> {team ? team.repo || 'No repo set' : user?.email}
             </p>
@@ -167,6 +208,17 @@ const TeamDashboard = () => {
                   />
                 </div>
                 <div>
+                  <label className="block text-xs font-mono text-gray-400 mb-1">COLLEGE NAME</label>
+                  <input
+                    type="text"
+                    value={createCollege}
+                    onChange={(e) => setCreateCollege(e.target.value)}
+                    required
+                    className="w-full bg-gray-900 border border-gray-800 rounded-lg py-2 px-3 text-gray-200 focus:outline-none focus:border-green-500/50"
+                    placeholder="MIT"
+                  />
+                </div>
+                <div>
                   <label className="block text-xs font-mono text-gray-400 mb-1">GITHUB REPO (Optional)</label>
                   <input
                     type="text"
@@ -190,6 +242,59 @@ const TeamDashboard = () => {
           </div>
         ) : (
           <>
+            {/* Edit Team Settings */}
+            <AnimatePresence>
+              {isEditing && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mb-8 overflow-hidden"
+                >
+                  <div className="bg-gray-950/80 border border-gray-800 rounded-xl p-6">
+                    <h3 className="text-lg font-bold text-gray-200 mb-4 flex items-center gap-2">
+                      <Settings className="w-5 h-5 text-gray-400" /> Team Settings
+                    </h3>
+                    <form onSubmit={handleUpdateTeam} className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-mono text-gray-400 mb-1">TEAM NAME</label>
+                          <input
+                            type="text"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            required
+                            className="w-full bg-gray-900 border border-gray-800 rounded-lg py-2 px-3 text-gray-200 focus:outline-none focus:border-blue-500/50"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-mono text-gray-400 mb-1">GITHUB REPO</label>
+                          <input
+                            type="text"
+                            value={editRepo}
+                            onChange={(e) => setEditRepo(e.target.value)}
+                            className="w-full bg-gray-900 border border-gray-800 rounded-lg py-2 px-3 text-gray-200 focus:outline-none focus:border-blue-500/50"
+                            placeholder="https://github.com/..."
+                          />
+                        </div>
+                      </div>
+                      
+                      {editError && <p className="text-red-400 text-xs bg-red-900/20 p-2 rounded">{editError}</p>}
+                      
+                      <div className="flex gap-3 justify-end pt-2">
+                        <button type="button" onClick={() => setIsEditing(false)} className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors">
+                          Cancel
+                        </button>
+                        <button disabled={editLoading} type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-bold flex items-center gap-2 transition-colors disabled:opacity-50">
+                          {editLoading && <Loader2 className="w-4 h-4 animate-spin" />} Save Changes
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Info grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
               <div className="bg-gray-950/50 p-5 rounded-xl border border-gray-800/50">

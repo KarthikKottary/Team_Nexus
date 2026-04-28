@@ -18,6 +18,11 @@ const TeamSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
+    college_name: {
+      type: String,
+      required: [true, 'College name is required'],
+      trim: true,
+    },
     repo: {
       type: String,
       trim: true,
@@ -38,8 +43,8 @@ const TeamSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['active', 'idle', 'inactive'],
-      default: 'active',
+      enum: ['pending', 'active'],
+      default: 'pending',
     },
     lastCommitAt: {
       type: Date,

@@ -52,7 +52,7 @@ export const apiCreateMyTeam = (body: object) =>
   fetch(`${BASE_URL}/teams/create`, { method: 'POST', headers: headers(true), body: JSON.stringify(body) }).then(handleResponse);
 
 export const apiJoinTeam = (body: { code: string }) =>
-  fetch(`${BASE_URL}/teams/join`, { method: 'POST', headers: headers(true), body: JSON.stringify(body) }).then(handleResponse);
+  fetch(`${BASE_URL}/teams/join/${body.code}`, { method: 'POST', headers: headers(true) }).then(handleResponse);
 
 export const apiCreateTeam = (body: object) =>
   fetch(`${BASE_URL}/teams`, { method: 'POST', headers: headers(true), body: JSON.stringify(body) })
@@ -75,3 +75,14 @@ export const apiCreateAlert = (body: object) =>
 export const apiResolveAlert = (id: string) =>
   fetch(`${BASE_URL}/alerts/${id}/resolve`, { method: 'PATCH', headers: headers(true) })
     .then(handleResponse);
+
+export const apiGetNotifications = () =>
+  fetch(`${BASE_URL}/admin/notifications`, { headers: headers(true) }).then(handleResponse);
+
+export const apiExportReport = () => {
+  return fetch(`${BASE_URL}/admin/export-report`, { headers: headers(true) })
+    .then((res) => {
+      if (!res.ok) throw new Error('Export failed');
+      return res.blob();
+    });
+};
