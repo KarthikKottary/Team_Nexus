@@ -86,3 +86,7 @@ export const apiExportReport = () => {
       return res.blob();
     });
 };
+
+export const apiFetchGithub = (body: { repoUrl: string; teamId: string }) =>
+  fetch(`${BASE_URL}/github/fetch`, { method: 'POST', headers: headers(true), body: JSON.stringify(body) })
+    .then(handleResponse);

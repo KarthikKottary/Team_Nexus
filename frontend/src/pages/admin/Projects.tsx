@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Briefcase, GitCommit } from 'lucide-react';
-import { apiGetTeams } from '../../api/client';
+import { Briefcase, GitCommit, RefreshCw, Loader2 } from 'lucide-react';
+import { apiGetTeams, apiFetchGithub } from '../../api/client';
 import StatusBadge from '../../components/dashboard/StatusBadge';
 
 interface Team {
@@ -15,6 +15,7 @@ interface Team {
 const Projects = () => {
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -29,6 +30,22 @@ const Projects = () => {
     };
     fetchTeams();
   }, []);
+
+  const handleSync = async (teamId: string, repoUrl: string) => {
+    if (!repoUrl) return;
+    setSyncing(prev => ({ ...prev, [teamId]: true }));
+    try {
+      await apiFetchGithub({ repoUrl, teamId });
+      // Refresh teams data after syncing
+      const res = await apiGetTeams();
+      setTeams(res.data || []);
+    } catch (err: any) {
+      console.error('GitHub Sync Error:', err);
+      alert(err.message || 'Failed to sync GitHub data. Check if repository is public.');
+    } finally {
+      setSyncing(prev => ({ ...prev, [teamId]: false }));
+    }
+  };
 
   const timeAgo = (iso: string | null) => {
     if (!iso) return 'Never';
@@ -71,9 +88,23 @@ const Projects = () => {
                   <td className="p-4 font-medium text-gray-200">{team.name}</td>
                   <td className="p-4 text-gray-400 font-mono text-sm truncate max-w-[250px]">
                     {team.repo ? (
-                      <a href={team.repo} target="_blank" rel="noreferrer" className="hover:text-blue-400 transition-colors">
-                        {team.repo}
-                      </a>
+                      <div className="flex items-center gap-2">
+                        <a href={team.repo} target="_blank" rel="noreferrer" className="hover:text-blue-400 transition-colors truncate">
+                          {team.repo}
+                        </a>
+                        <button
+                          onClick={() => handleSync(team._id, team.repo)}
+                          disabled={syncing[team._id]}
+                          title="Sync GitHub Commits"
+                          className="text-gray-500 hover:text-blue-400 transition-colors disabled:opacity-50"
+                        >
+                          {syncing[team._id] ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-400" />
+                          ) : (
+                            <RefreshCw className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      </div>
                     ) : (
                       <span className="opacity-50">No repo</span>
                     )}

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertTriangle, GitBranch, Users, Activity, LogOut, Loader2, CheckCircle, Shield, Settings } from 'lucide-react';
+import { AlertTriangle, GitBranch, Users, Activity, LogOut, Loader2, CheckCircle, Shield, Settings, RefreshCw } from 'lucide-react';
 import StatusBadge from '../components/dashboard/StatusBadge';
 import { useAuth } from '../context/AuthContext';
-import { apiCreateAlert, apiGetMyTeamDetails, apiCreateMyTeam, apiJoinTeam, apiUpdateTeam } from '../api/client';
+import { apiCreateAlert, apiGetMyTeamDetails, apiCreateMyTeam, apiJoinTeam, apiUpdateTeam, apiFetchGithub } from '../api/client';
 import { useNavigate } from 'react-router-dom';
 
 type AlertType = 'Medical' | 'Technical' | 'Security' | 'Fire' | 'Other';
@@ -35,6 +35,9 @@ const TeamDashboard = () => {
   const [editRepo, setEditRepo] = useState('');
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState('');
+
+  // Sync State
+  const [syncingRepo, setSyncingRepo] = useState(false);
 
   const fetchMyTeam = async () => {
     try {
@@ -119,6 +122,19 @@ const TeamDashboard = () => {
     }
   };
 
+  const handleSyncGithub = async () => {
+    if (!team?.repo) return;
+    setSyncingRepo(true);
+    try {
+      await apiFetchGithub({ repoUrl: team.repo, teamId: team._id });
+      await fetchMyTeam();
+    } catch (err: any) {
+      alert(err.message || 'Failed to sync GitHub data');
+    } finally {
+      setSyncingRepo(false);
+    }
+  };
+
   const handleLogout = () => { logout(); navigate('/auth'); };
 
   if (loadingTeam) {
@@ -151,9 +167,26 @@ const TeamDashboard = () => {
                 </button>
               )}
             </div>
-            <p className="text-gray-400 flex items-center gap-2 font-mono text-sm">
-              <GitBranch className="w-4 h-4" /> {team ? team.repo || 'No repo set' : user?.email}
-            </p>
+            <div className="text-gray-400 flex items-center gap-2 font-mono text-sm">
+              <GitBranch className="w-4 h-4" /> 
+              {team && team.repo ? (
+                <div className="flex items-center gap-2">
+                  <a href={team.repo} target="_blank" rel="noreferrer" className="hover:text-blue-400 transition-colors">
+                    {team.repo}
+                  </a>
+                  <button
+                    onClick={handleSyncGithub}
+                    disabled={syncingRepo}
+                    className="text-gray-500 hover:text-blue-400 transition-colors disabled:opacity-50 ml-1"
+                    title="Sync Commits from GitHub"
+                  >
+                    {syncingRepo ? <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-400" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              ) : (
+                <span>{user?.email}</span>
+              )}
+            </div>
           </div>
           <div className="flex flex-col items-end gap-2">
             <span className="text-xs font-mono text-gray-500 uppercase">System Status</span>
