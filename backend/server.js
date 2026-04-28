@@ -57,6 +57,17 @@ async function connectDB() {
   await mongoose.connect(uri);
   console.log('✅ MongoDB connected successfully');
 
+  // Fix: Drop any legacy unique indexes that might be blocking new users
+  try {
+    const User = require('./models/User');
+    const Team = require('./models/Team');
+    await User.syncIndexes();
+    await Team.syncIndexes();
+    console.log('✅ Database indexes synchronized.');
+  } catch (err) {
+    console.error('⚠️ Failed to sync indexes:', err.message);
+  }
+
   // No demo data seeding - real entries only
 }
 
