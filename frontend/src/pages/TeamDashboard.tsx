@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertTriangle, GitBranch, Users, Activity, LogOut, Loader2, CheckCircle, Shield, Settings, RefreshCw } from 'lucide-react';
+import { AlertTriangle, GitBranch, Users, Activity, LogOut, Loader2, CheckCircle, Shield, Settings, RefreshCw, Phone } from 'lucide-react';
 import StatusBadge from '../components/dashboard/StatusBadge';
 import { useAuth } from '../context/AuthContext';
-import { apiCreateAlert, apiGetMyTeamDetails, apiCreateMyTeam, apiJoinTeam, apiUpdateTeam, apiFetchGithub } from '../api/client';
+import { apiCreateAlert, apiGetMyTeamDetails, apiCreateMyTeam, apiJoinTeam, apiUpdateTeam, apiFetchGithub, apiGetVolunteers } from '../api/client';
 import { useNavigate } from 'react-router-dom';
 import ChatbotWidget from '../components/dashboard/ChatbotWidget';
 import { HackerPass } from '../components/dashboard/HackerPass';
@@ -85,9 +85,23 @@ const TeamDashboard = () => {
     }
   };
 
+  const [volunteers, setVolunteers] = useState<any[]>([]);
+
   useEffect(() => {
     fetchMyTeam();
+    apiGetVolunteers().then(setVolunteers).catch(console.error);
   }, []);
+
+  const handleCallVolunteer = () => {
+    if (volunteers.length === 0) {
+      alert("No volunteers currently on duty.");
+      return;
+    }
+    const randomVol = volunteers[Math.floor(Math.random() * volunteers.length)];
+    if (window.confirm(`Call volunteer: ${randomVol.name}?`)) {
+      window.location.href = `tel:${randomVol.phone}`;
+    }
+  };
 
   const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -178,55 +192,20 @@ const TeamDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-transparent flex flex-col items-center justify-center p-6 text-white font-sans relative overflow-hidden">
-      {/* Quick Actions Panel */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-        className="p-6 bg-gray-900/50 border border-gray-800/50 rounded-2xl backdrop-blur-xl hover:border-gray-700 transition-all group"
-      >
-        <div className="flex items-center gap-3 mb-6">
-          <Activity className="w-5 h-5 text-green-400 group-hover:scale-110 transition-transform" />
-          <h2 className="text-lg font-bold text-gray-200">Interactive Portals</h2>
-        </div>
+    <div className="min-h-screen bg-transparent pt-28 pb-12 px-6 text-white font-sans relative overflow-hidden flex justify-center">
+      <div className="w-full max-w-7xl flex flex-col lg:flex-row gap-8 items-start">
         
-        <div className="space-y-4">
-          <div className="p-4 bg-gray-950/50 rounded-xl border border-gray-800 flex justify-between items-center group-hover:bg-gray-900 transition-colors cursor-pointer relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div>
-              <h3 className="text-sm font-bold text-gray-200 mb-1">Request Mentor Assist</h3>
-              <p className="text-xs text-gray-500">Call a mentor to your table</p>
-            </div>
-            <button 
-              onClick={() => alert("Chatbot triggered! Please use the AI assistant widget below to request a mentor.")}
-              className="px-4 py-2 bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white rounded-lg text-sm font-bold transition-all flex items-center gap-2"
-            >
-              <MessageCircle className="w-4 h-4" /> Ping AI
-            </button>
-          </div>
-
-          <div className="p-4 bg-gray-950/50 rounded-xl border border-gray-800">
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <h3 className="text-sm font-bold text-gray-200 mb-1">GitHub Tracking</h3>
-                <p className="text-xs text-gray-500">Live commit synchronization</p>
-              </div>
-              <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-bold font-mono">
-                {team?.recentCommits?.length || 0} Commits
-              </span>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-3xl bg-gray-900/60 border border-gray-800 rounded-2xl p-8 backdrop-blur-xl relative z-10 shadow-2xl"
-      >
+        {/* Main Content Column */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex-1 w-full bg-[#0a0a0a] border border-gray-800/60 rounded-xl p-8 relative z-10 shadow-sm"
+        >
         {/* Header */}
         <div className="flex justify-between items-start mb-8 border-b border-gray-800 pb-6">
           <div>
             <div className="flex items-center gap-4">
-              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500 mb-1">
+              <h1 className="text-3xl font-bold text-gray-100 tracking-tight mb-1">
                 {team ? team.name : 'Participant Portal'}
               </h1>
               {team && !isEditing && (
@@ -268,9 +247,9 @@ const TeamDashboard = () => {
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1 text-xs text-gray-500 hover:text-red-400 transition-colors mt-1"
+              className="flex items-center gap-2 text-xs font-semibold text-gray-300 hover:text-red-400 hover:bg-red-950/30 border border-gray-800 hover:border-red-900/50 rounded-md px-3 py-1.5 transition-all mt-2"
             >
-              <LogOut className="w-3 h-3" /> Logout
+              <LogOut className="w-3.5 h-3.5" /> Logout
             </button>
           </div>
         </div>
@@ -502,7 +481,61 @@ const TeamDashboard = () => {
             </div>
           </>
         )}
-      </motion.div>
+        </motion.div>
+
+        {/* Sidebar Column (Quick Actions) */}
+        {team && (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+            className="w-full lg:w-80 shrink-0 flex flex-col gap-6"
+          >
+            <div className="p-6 bg-[#0a0a0a] border border-gray-800/60 rounded-xl relative z-10 shadow-sm">
+              <div className="flex items-center gap-3 mb-6 border-b border-gray-800 pb-4">
+                <Activity className="w-4 h-4 text-gray-400" />
+                <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Interactive Portals</h2>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="p-4 bg-[#111] rounded-lg border border-gray-800 flex flex-col gap-3 transition-colors">
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-200 mb-1">Request Mentor Assist</h3>
+                    <p className="text-xs text-gray-500 leading-relaxed">Call a mentor to your table for technical help.</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <button 
+                      onClick={() => alert("Chatbot triggered! Please use the AI assistant widget below to request a mentor.")}
+                      className="w-full py-2 bg-[#222] hover:bg-[#333] border border-gray-700 text-gray-300 rounded text-xs font-medium transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" /> Ping AI
+                    </button>
+                    <button 
+                      onClick={handleCallVolunteer}
+                      className="w-full py-2 bg-blue-900/30 hover:bg-blue-800/40 border border-blue-800/50 text-blue-300 rounded text-xs font-medium transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <Phone className="w-3.5 h-3.5" /> Call Volunteer
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-[#111] rounded-lg border border-gray-800 flex flex-col gap-3">
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-200 mb-1">GitHub Tracking</h3>
+                    <p className="text-xs text-gray-500 leading-relaxed">Live commit synchronization for judges.</p>
+                  </div>
+                  <div className="w-full py-2 bg-[#0a0a0a] border border-gray-800 rounded flex justify-center items-center">
+                    <span className="text-xs font-mono font-semibold text-gray-400">
+                      {team?.recentCommits?.length || 0} COMMITS LOGGED
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+      </div>
 
       {/* AI Chatbot Assistant */}
       <ChatbotWidget teamId={team?._id} userId={user?._id} />

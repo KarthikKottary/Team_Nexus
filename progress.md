@@ -32,7 +32,10 @@ Updates must align with commits to ensure transparency of work done.
 - **Intelligent Leaderboard & Predictions**: Built a Chart.js-powered visual leaderboard evaluating teams on Innovation, Technical, and Impact metrics. Integrated a lightweight predictive rule engine (zero heavy ML) to flag "Rising Stars", "Top Performers" (based on high commit velocity and above-average scores), and "At-Risk Teams" (extended inactivity or critically low scores).
 - **Checkpoints & Warnings Framework**: Established an automated phase tracking system. `node-cron` listeners track checkpoint deadlines, dispatch 30-minute auto-reminders, detect missed submissions, and send targeted urgent Socket.io warnings to idle teams.
 - **Multi-Agent Architecture Rewrite**: Fully refactored the monolith orchestrator into a decoupled, Event-Driven Multi-Agent System (EventEmitter/Redis). Created autonomous `EmergencyAgent`, `ActivityAgent`, and `NotificationAgent` modules that react to internal events independently to dictate system flow.
-
+- **Global AI Chatbot (Nexus)**: Expanded the intelligent chatbot into a global wrapper accessible across Landing and Auth pages. Upgraded its system prompt to feature a highly polite, well-mannered personality explicitly trained to reassure and guide first-time hackathon participants.
+- **Enterprise UI Refactoring**: Completely overhauled the flashy cyberpunk aesthetic into a professional, sleek SaaS architecture. Restructured the Participant Portal into a clean side-by-side flex layout with a dedicated "Interactive Portals" sidebar.
+- **Holographic Team Identity (HackerPass)**: Engineered a new digital identity card for teams featuring a live-generated monochrome QR code tied directly to their MongoDB object ID for physical check-ins.
+- **Volunteer Dispatch System**: Built a full-stack Volunteer directory. Admins can manage the live roster via the new Control Room tab, and participants can instantly dispatch a randomized on-duty volunteer directly to their table via a native `tel:` integration.
 ## 🟡 Current Progress
 - The core loop is fully functional: Users can register, log in, view role-specific dashboards, and log out.
 - Participants can successfully trigger live emergency alerts.

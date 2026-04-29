@@ -105,3 +105,13 @@ export const apiGetLeaderboard = () =>
 
 export const apiGetPredictions = () =>
   fetch(`${BASE_URL}/leaderboard/predictions`, { headers: headers(true) }).then(handleResponse);
+
+// ─── Volunteers ─────────────────────────────────────────────────────────────
+export const apiGetVolunteers = () =>
+  fetch(`${BASE_URL}/volunteers`, { headers: headers(true) }).then(handleResponse);
+
+export const apiCreateVolunteer = (body: { name: string; phone: string }) =>
+  fetch(`${BASE_URL}/volunteers`, { method: 'POST', headers: headers(true), body: JSON.stringify(body) }).then(handleResponse);
+
+export const apiDeleteVolunteer = (id: string) =>
+  fetch(`${BASE_URL}/volunteers/${id}`, { method: 'DELETE', headers: headers(true) }).then(handleResponse);

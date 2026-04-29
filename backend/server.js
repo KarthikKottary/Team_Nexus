@@ -17,6 +17,7 @@ const noticeRoutes = require('./routes/noticeRoutes');
 const mealRoutes = require('./routes/mealRoutes');
 const leaderboardRoutes = require('./routes/leaderboardRoutes');
 const checkpointRoutes = require('./routes/checkpointRoutes');
+const volunteerRoutes = require('./routes/volunteerRoutes');
 
 const app  = express();
 const server = http.createServer(app);
@@ -141,6 +142,7 @@ app.use('/api/notices', noticeRoutes);
 app.use('/api/meals', mealRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/checkpoints', checkpointRoutes);
+app.use('/api/volunteers', volunteerRoutes);
 
 // ──────────────────────────────────────────────
 //  Global Error Handler

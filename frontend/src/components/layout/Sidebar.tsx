@@ -13,6 +13,7 @@ const Sidebar = () => {
     { name: 'Teams', icon: Users, path: '/admin/teams' },
     { name: 'Alerts', icon: AlertTriangle, path: '/admin/alerts' },
     { name: 'Projects', icon: Briefcase, path: '/admin/projects' },
+    { name: 'Volunteers', icon: Users, path: '/admin/volunteers' },
   ];
 
   return (

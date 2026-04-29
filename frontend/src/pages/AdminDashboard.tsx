@@ -11,6 +11,7 @@ import Teams from './admin/Teams';
 import Alerts from './admin/Alerts';
 import Projects from './admin/Projects';
 import Settings from './admin/Settings';
+import Volunteers from './admin/Volunteers';
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
@@ -52,6 +53,7 @@ const AdminDashboard = () => {
             <Route path="teams" element={<Teams />} />
             <Route path="alerts" element={<Alerts />} />
             <Route path="projects" element={<Projects />} />
+            <Route path="volunteers" element={<Volunteers />} />
             <Route path="settings" element={<Settings />} />
           </Routes>
         </div>
