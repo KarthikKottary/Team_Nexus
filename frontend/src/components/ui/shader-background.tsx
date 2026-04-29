@@ -77,8 +77,8 @@ const ShaderBackground = () => {
       space.x += random(space.y * warpFrequency + iTime * warpSpeed + 2.0) * warpAmplitude * horizontalFade;
 
       vec4 lines = vec4(0.0);
-      vec4 bgColor1 = vec4(0.05, 0.05, 0.15, 1.0); // Slightly darker for better contrast with UI
-      vec4 bgColor2 = vec4(0.15, 0.05, 0.25, 1.0);
+      vec4 bgColor1 = vec4(0.1, 0.1, 0.3, 1.0);
+      vec4 bgColor2 = vec4(0.3, 0.1, 0.5, 1.0);
 
       for(int l = 0; l < linesPerGroup; l++) {
         float normalizedLineIndex = float(l) / float(linesPerGroup);
@@ -127,7 +127,7 @@ const ShaderBackground = () => {
   const initShaderProgram = (gl: WebGLRenderingContext, vsSource: string, fsSource: string) => {
     const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
     const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
-
+    
     if (!vertexShader || !fragmentShader) return null;
 
     const shaderProgram = gl.createProgram();
@@ -157,7 +157,7 @@ const ShaderBackground = () => {
 
     const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
     if (!shaderProgram) return;
-
+    
     const positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     const positions = [
@@ -188,9 +188,9 @@ const ShaderBackground = () => {
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    let animationFrameId: number;
     let startTime = Date.now();
-
+    let animationFrameId: number;
+    
     const render = () => {
       const currentTime = (Date.now() - startTime) / 1000;
 
@@ -217,7 +217,7 @@ const ShaderBackground = () => {
       animationFrameId = requestAnimationFrame(render);
     };
 
-    render();
+    animationFrameId = requestAnimationFrame(render);
 
     return () => {
       window.removeEventListener('resize', resizeCanvas);
@@ -226,7 +226,7 @@ const ShaderBackground = () => {
   }, []);
 
   return (
-    <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full -z-10" />
+    <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full -z-10 object-cover opacity-80" />
   );
 };
 

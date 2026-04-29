@@ -7,7 +7,9 @@ const Team = require('../models/Team');
 const getAllTeams = async (req, res) => {
   try {
     const teams = await Team.find()
-      .select('name repo status lastCommitAt members recentCommits')
+      .select('name repo status lastCommitAt members recentCommits owner joinCode')
+      .populate('members', 'name email role')
+      .populate('owner', 'name email')
       .sort({ lastCommitAt: -1 });
 
     res.status(200).json({ success: true, count: teams.length, data: teams });
@@ -22,7 +24,10 @@ const getAllTeams = async (req, res) => {
  */
 const getTeam = async (req, res) => {
   try {
-    const team = await Team.findById(req.params.id).populate('owner', 'name email');
+    const team = await Team.findById(req.params.id)
+      .populate('owner', 'name email')
+      .populate('members', 'name email role');
+      
     if (!team) return res.status(404).json({ success: false, message: 'Team not found.' });
     res.status(200).json({ success: true, data: team });
   } catch (err) {

@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { apiCreateAlert, apiGetMyTeamDetails, apiCreateMyTeam, apiJoinTeam, apiUpdateTeam, apiFetchGithub } from '../api/client';
 import { useNavigate } from 'react-router-dom';
 import ChatbotWidget from '../components/dashboard/ChatbotWidget';
+import { HackerPass } from '../components/dashboard/HackerPass';
 import { NoticeBoard } from '../components/dashboard/NoticeBoard';
 import { Clock, MessageCircle } from 'lucide-react';
 
@@ -402,6 +403,16 @@ const TeamDashboard = () => {
               )}
             </AnimatePresence>
 
+            {/* Hacker Pass Identity Card */}
+            <div className="mb-8">
+              <HackerPass 
+                teamName={team.name} 
+                collegeName={team.college_name || 'N/A'} 
+                teamId={team._id} 
+                joinCode={team.joinCode} 
+              />
+            </div>
+
             {/* Info grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
               <div className="bg-gray-950/50 p-5 rounded-xl border border-gray-800/50">
@@ -409,12 +420,16 @@ const TeamDashboard = () => {
                   <Users className="w-4 h-4" /> Team Members & Code
                 </h3>
                 <ul className="space-y-2 text-gray-300 text-sm mb-4">
-                  {team.members?.map((m: any) => (
-                    <li key={m._id} className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-blue-500" />
-                      {m.name} {m._id === user?._id && <span className="text-gray-600 text-xs">(You)</span>}
-                    </li>
-                  ))}
+                  {team.members?.map((m: any) => {
+                    const memberId = m._id || m;
+                    const memberName = m.name || (memberId === user?._id ? user?.name : 'Participant');
+                    return (
+                      <li key={memberId} className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-blue-500" />
+                        {memberName} {memberId === user?._id && <span className="text-gray-600 text-xs">(You)</span>}
+                      </li>
+                    );
+                  })}
                 </ul>
                 <div className="bg-gray-900 p-3 rounded-lg border border-gray-800 flex justify-between items-center">
                   <span className="text-xs text-gray-500">JOIN CODE:</span>

@@ -17,13 +17,8 @@ const Sidebar = () => {
 
   return (
     <aside className="w-64 h-screen bg-gray-950 border-r border-gray-800 flex flex-col relative z-20">
-      <div className="p-6 flex items-center gap-3">
-        <div className="w-8 h-8 rounded bg-gradient-to-br from-orange-500 to-yellow-500 flex items-center justify-center shadow-[0_0_15px_rgba(249,115,22,0.5)]">
-          <AlertTriangle className="w-5 h-5 text-black" />
-        </div>
-        <h1 className="font-bold text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-400">
-          SYS_CTRL
-        </h1>
+      <div className="p-6 flex items-center h-20 w-full">
+        {/* Placeholder for the globally Animated Logo Intro to land */}
       </div>
 
       <nav className="flex-1 px-4 space-y-2 mt-4">
