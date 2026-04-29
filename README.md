@@ -131,3 +131,4 @@ See [progress.md](./progress.md) to track completed tasks, current status, and u
 ## 👥 Contributors
 - **[KarthikKottary](https://github.com/KarthikKottary)** - Lead Developer
 - **[moyeez05](https://github.com/moyeez05)** - Contributor
+ **[ayan-2105](https://github.com/ayan-2105)** - Contributor
