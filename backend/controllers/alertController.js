@@ -1,4 +1,5 @@
 const Alert = require('../models/Alert');
+const { emitEvent } = require('../orchestrator/redis');
 
 /**
  * GET /alerts
@@ -58,6 +59,9 @@ const createAlert = async (req, res) => {
 
     // Emit realtime update to all connected clients (especially Admin Dashboard)
     if (req.io) {
+      // Orchestrator Event
+      emitEvent('new_alert', { type, location, active: true, _id: alert._id });
+
       req.io.emit('new_alert', populated);
 
       // AUTOMATED RESPONSE SYSTEM (AGENT LOGIC)

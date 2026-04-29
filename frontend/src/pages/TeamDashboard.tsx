@@ -5,6 +5,9 @@ import StatusBadge from '../components/dashboard/StatusBadge';
 import { useAuth } from '../context/AuthContext';
 import { apiCreateAlert, apiGetMyTeamDetails, apiCreateMyTeam, apiJoinTeam, apiUpdateTeam, apiFetchGithub } from '../api/client';
 import { useNavigate } from 'react-router-dom';
+import ChatbotWidget from '../components/dashboard/ChatbotWidget';
+import { NoticeBoard } from '../components/dashboard/NoticeBoard';
+import { Clock, MessageCircle } from 'lucide-react';
 
 type AlertType = 'Medical' | 'Technical' | 'Security' | 'Fire' | 'Other';
 
@@ -38,6 +41,34 @@ const TeamDashboard = () => {
 
   // Sync State
   const [syncingRepo, setSyncingRepo] = useState(false);
+
+  // Hackathon Countdown State
+  const [timeLeft, setTimeLeft] = useState('00:00:00');
+
+  useEffect(() => {
+    // Interactive Hackathon Countdown Logic
+    // For demo purposes, we'll set the deadline to 24 hours from now on first load
+    const deadline = new Date(Date.now() + 24 * 60 * 60 * 1000).getTime();
+    
+    const timer = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = deadline - now;
+      
+      if (distance < 0) {
+        clearInterval(timer);
+        setTimeLeft('EXPIRED');
+        return;
+      }
+      
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      
+      setTimeLeft(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   const fetchMyTeam = async () => {
     try {
@@ -147,8 +178,44 @@ const TeamDashboard = () => {
 
   return (
     <div className="min-h-screen bg-transparent flex flex-col items-center justify-center p-6 text-white font-sans relative overflow-hidden">
+      {/* Quick Actions Panel */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+        className="p-6 bg-gray-900/50 border border-gray-800/50 rounded-2xl backdrop-blur-xl hover:border-gray-700 transition-all group"
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <Activity className="w-5 h-5 text-green-400 group-hover:scale-110 transition-transform" />
+          <h2 className="text-lg font-bold text-gray-200">Interactive Portals</h2>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="p-4 bg-gray-950/50 rounded-xl border border-gray-800 flex justify-between items-center group-hover:bg-gray-900 transition-colors cursor-pointer relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div>
+              <h3 className="text-sm font-bold text-gray-200 mb-1">Request Mentor Assist</h3>
+              <p className="text-xs text-gray-500">Call a mentor to your table</p>
+            </div>
+            <button 
+              onClick={() => alert("Chatbot triggered! Please use the AI assistant widget below to request a mentor.")}
+              className="px-4 py-2 bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white rounded-lg text-sm font-bold transition-all flex items-center gap-2"
+            >
+              <MessageCircle className="w-4 h-4" /> Ping AI
+            </button>
+          </div>
 
-
+          <div className="p-4 bg-gray-950/50 rounded-xl border border-gray-800">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className="text-sm font-bold text-gray-200 mb-1">GitHub Tracking</h3>
+                <p className="text-xs text-gray-500">Live commit synchronization</p>
+              </div>
+              <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-bold font-mono">
+                {team?.recentCommits?.length || 0} Commits
+              </span>
+            </div>
+          </div>
+        </div>
+      </motion.div>
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -189,8 +256,15 @@ const TeamDashboard = () => {
             </div>
           </div>
           <div className="flex flex-col items-end gap-2">
-            <span className="text-xs font-mono text-gray-500 uppercase">System Status</span>
-            <StatusBadge status="active" label={team ? "Project Active" : "Online"} />
+            <span className="text-xs font-mono text-gray-500 uppercase">Hackathon Countdown</span>
+            <div className="flex items-center gap-2 bg-gray-900/50 px-4 py-2 rounded-xl border border-gray-800">
+              <Clock className="w-4 h-4 text-blue-400 animate-pulse" />
+              <span className="text-xl font-mono font-bold text-gray-100">{timeLeft}</span>
+            </div>
+            <div className="flex flex-col items-end gap-2 mt-4">
+              <span className="text-xs font-mono text-gray-500 uppercase">System Status</span>
+              <StatusBadge status="running" label={team ? "Project Active" : "Online"} />
+            </div>
             <button
               onClick={handleLogout}
               className="flex items-center gap-1 text-xs text-gray-500 hover:text-red-400 transition-colors mt-1"
@@ -366,6 +440,11 @@ const TeamDashboard = () => {
                   <span className="font-mono font-bold text-green-400">{team.recentCommits?.length || 0}</span>
                 </div>
               </div>
+
+              {/* Notice Board */}
+              <div className="md:col-span-2 h-[400px]">
+                <NoticeBoard teamId={team?._id} />
+              </div>
             </div>
 
             {/* Emergency Trigger */}
@@ -409,6 +488,9 @@ const TeamDashboard = () => {
           </>
         )}
       </motion.div>
+
+      {/* AI Chatbot Assistant */}
+      <ChatbotWidget teamId={team?._id} userId={user?._id} />
     </div>
   );
 };

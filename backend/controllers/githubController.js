@@ -1,5 +1,6 @@
 const axios = require('axios');
 const Team = require('../models/Team');
+const { emitEvent } = require('../orchestrator/redis');
 
 /**
  * @route   POST /api/github/fetch
@@ -64,6 +65,12 @@ const fetchGithubData = async (req, res) => {
       // team.status = activityStatus;
       await team.save();
     }
+
+    emitEvent('github_activity', {
+      teamId,
+      commitCount: totalCommits,
+      repo: repoUrl
+    });
 
     return res.json({
       success: true,

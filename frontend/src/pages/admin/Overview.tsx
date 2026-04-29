@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Users, Activity, ShieldAlert, Server } from 'lucide-react';
 import { apiGetTeams, apiGetAlerts } from '../../api/client';
+import { NoticeBoard } from '../../components/dashboard/NoticeBoard';
+import { Leaderboard } from '../../components/dashboard/Leaderboard';
 
 const Overview = () => {
   const [totalTeams, setTotalTeams] = useState(0);
@@ -57,6 +59,15 @@ const Overview = () => {
           </div>
           <p className="text-4xl font-bold text-red-500 font-mono">{activeAlerts}</p>
         </motion.div>
+      </div>
+
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="h-[600px]">
+          <NoticeBoard />
+        </div>
+        <div className="h-[600px]">
+          <Leaderboard />
+        </div>
       </div>
     </div>
   );

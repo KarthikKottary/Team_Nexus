@@ -90,3 +90,18 @@ export const apiExportReport = () => {
 export const apiFetchGithub = (body: { repoUrl: string; teamId: string }) =>
   fetch(`${BASE_URL}/github/fetch`, { method: 'POST', headers: headers(true), body: JSON.stringify(body) })
     .then(handleResponse);
+
+// ─── Notices ─────────────────────────────────────────────────────────────────
+export const apiGetNotices = () =>
+  fetch(`${BASE_URL}/notices`, { headers: headers(true) }).then(handleResponse);
+
+export const apiCreateNotice = (body: object) =>
+  fetch(`${BASE_URL}/notices`, { method: 'POST', headers: headers(true), body: JSON.stringify(body) })
+    .then(handleResponse);
+
+// ─── Leaderboard ─────────────────────────────────────────────────────────────
+export const apiGetLeaderboard = () =>
+  fetch(`${BASE_URL}/leaderboard`, { headers: headers(true) }).then(handleResponse);
+
+export const apiGetPredictions = () =>
+  fetch(`${BASE_URL}/leaderboard/predictions`, { headers: headers(true) }).then(handleResponse);

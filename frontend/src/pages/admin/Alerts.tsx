@@ -4,6 +4,7 @@ import { ShieldAlert, CheckCircle } from 'lucide-react';
 import { apiGetAlerts, apiResolveAlert } from '../../api/client';
 import AlertCard, { Alert } from '../../components/dashboard/AlertCard';
 import { io } from 'socket.io-client';
+import InteractiveMap from '../../components/dashboard/InteractiveMap';
 
 const Alerts = () => {
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -73,6 +74,11 @@ const Alerts = () => {
         <div className="flex items-center gap-2 mb-6">
           <ShieldAlert className="text-red-500 w-5 h-5 animate-pulse" />
           <h2 className="text-lg font-bold uppercase tracking-widest text-red-400">Active Emergencies</h2>
+        </div>
+        
+        {/* Interactive Geographical Map */}
+        <div className="mb-8">
+          <InteractiveMap emergencies={activeAlerts} />
         </div>
         
         {loading ? (

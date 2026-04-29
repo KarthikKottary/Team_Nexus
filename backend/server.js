@@ -12,6 +12,11 @@ const alertRoutes = require('./routes/alertRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const exportRoutes = require('./routes/exportRoutes');
 const githubRoutes = require('./routes/githubRoutes');
+const roomRoutes = require('./routes/roomRoutes');
+const noticeRoutes = require('./routes/noticeRoutes');
+const mealRoutes = require('./routes/mealRoutes');
+const leaderboardRoutes = require('./routes/leaderboardRoutes');
+const checkpointRoutes = require('./routes/checkpointRoutes');
 
 const app  = express();
 const server = http.createServer(app);
@@ -72,6 +77,53 @@ async function connectDB() {
 }
 
 // ──────────────────────────────────────────────
+//  Orchestrator Setup
+// ──────────────────────────────────────────────
+const orchestratorEngine = require('./orchestrator/engine');
+const { sub } = require('./orchestrator/redis');
+const { initScheduler, setSchedulerIo } = require('./orchestrator/scheduler');
+
+orchestratorEngine.setSocketIo(io);
+setSchedulerIo(io);
+initScheduler();
+
+// Listen to Redis Pub/Sub if active
+if (sub) {
+  sub.subscribe('orchestrator_events', (err) => {
+    if (err) console.error('Failed to subscribe to orchestrator_events');
+    else console.log('✅ Orchestrator connected to Redis Pub/Sub');
+  });
+
+  sub.on('message', (channel, message) => {
+    if (channel === 'orchestrator_events') {
+      try {
+        const { eventType, payload } = JSON.parse(message);
+        orchestratorEngine.processEvent(eventType, payload);
+      } catch (e) {
+        console.error('Failed to parse orchestrator event');
+      }
+    }
+  });
+}
+
+// ──────────────────────────────────────────────
+//  Socket.io Connections
+// ──────────────────────────────────────────────
+const { handleChatMessage } = require('./controllers/chatController');
+
+io.on('connection', (socket) => {
+  console.log('🔗 Client connected:', socket.id);
+  
+  socket.on('send_chat_message', (payload) => {
+    handleChatMessage(socket, io, payload);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('❌ Client disconnected:', socket.id);
+  });
+});
+
+// ──────────────────────────────────────────────
 //  Routes
 // ──────────────────────────────────────────────
 app.get('/api/status', (req, res) => {
@@ -84,6 +136,11 @@ app.use('/api/alerts', alertRoutes);
 app.use('/api/admin/notifications', notificationRoutes);
 app.use('/api/admin/export-report', exportRoutes);
 app.use('/api/github', githubRoutes);
+app.use('/api/rooms', roomRoutes);
+app.use('/api/notices', noticeRoutes);
+app.use('/api/meals', mealRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/checkpoints', checkpointRoutes);
 
 // ──────────────────────────────────────────────
 //  Global Error Handler

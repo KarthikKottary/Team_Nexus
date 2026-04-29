@@ -55,6 +55,25 @@ const TeamSchema = new mongoose.Schema(
       ref: 'User',
       default: null,
     },
+    room: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Room',
+      default: null,
+    },
+    scores: {
+      innovation: { type: Number, default: 0 },
+      technical: { type: Number, default: 0 },
+      impact: { type: Number, default: 0 },
+      total: { type: Number, default: 0 }
+    },
+    scoreHistory: [{
+      total: Number,
+      timestamp: { type: Date, default: Date.now }
+    }],
+    completedCheckpoints: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Checkpoint'
+    }]
   },
   { timestamps: true }
 );
