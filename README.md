@@ -2,6 +2,8 @@
 
 A real-time, high-impact "Mission Control" system designed specifically to monitor, track, and manage live 24-hour hackathons. This futuristic, dark-themed dashboard is built to give event organizers instant visibility into team progress, active projects, and critical emergency alerts.
 
+🌐 **Live Deployed Product:** [https://smarthack-app.vercel.app/](https://smarthack-app.vercel.app/)
+
 ---
 
 ## 🛠️ Tech Stack
